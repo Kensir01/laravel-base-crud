@@ -14,7 +14,6 @@ class ComicController extends Controller
      */
     public function index()
     {
-        // voglio tutta la stampa dei fumetti
         $comics = comic::all();
         return view('comic.index', compact('comics'));
     }
@@ -26,7 +25,7 @@ class ComicController extends Controller
      */
     public function create()
     {
-        //
+        return view('pasta.create');
     }
 
     /**
@@ -37,7 +36,23 @@ class ComicController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate(
+            [
+                'thumb'=> 'required|url',
+                'title'=> 'required|min:10',
+                'type' => 'required|min:5',
+                'price' => 'required|numeric|min:0',
+            ]
+            );
+        $data = $request->all();
+
+        $comic = new comic();
+        
+        $comic->fill($data);
+
+        $comic->save();
+
+        return redirect()->route('comic.index')->with('status', 'Comic aggiunto correttamente!');
     }
 
     /**
@@ -48,17 +63,15 @@ class ComicController extends Controller
      */
     public function show($id)
     {
-        //
         $comic = Comic::find($id);
       
         if($comic){
-
+ 
             return view("comic.show", compact("comic"));
-
+ 
         } else {
-            abort(404);
+             abort(404);
         }
-        
     }
 
     /**
@@ -67,9 +80,9 @@ class ComicController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
-        //
+    // forma contratta edit
+    public function edit(comic $comics) {
+        return view('comic.edit', compact('comics'));
     }
 
     /**
@@ -79,9 +92,23 @@ class ComicController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, comic $comics)
     {
-        //
+        $request->validate(
+            [
+                'thumb'=> 'required|url',
+                'title'=> 'required|min:10',
+                'type' => 'required|min:5',
+                'price' => 'required|numeric|min:0',
+            ]
+        );
+        
+        $data = $request->all();
+
+        $comics->update($data);
+        $comics->save();
+
+        return redirect()->route('comic.show', ['comics' => $comics->id]);
     }
 
     /**
@@ -90,8 +117,9 @@ class ComicController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(comic $comics)
     {
-        //
+        $comics->delete();
+        return redirect()->route('comic.index')->with('status', 'Elemento correttamente cancellato!');
     }
 }
